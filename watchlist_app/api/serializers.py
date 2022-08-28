@@ -1,10 +1,16 @@
+from multiprocessing.sharedctypes import Value
 from wsgiref import validate
 from rest_framework import serializers
 from watchlist_app.models import Movie
 
+def name_length(value):
+    if len(value) < 2:
+        raise serializers.ValidationError('The length is too short')
+    return value
+
 class MovieSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
-    name = serializers.CharField()
+    name = serializers.CharField(validators=[name_length])
     description = serializers.CharField()
     active = serializers.BooleanField()
     
@@ -17,3 +23,18 @@ class MovieSerializer(serializers.Serializer):
         instance.active = validated_data.get('active', instance.active)
         instance.save()
         return instance
+    
+    #validation is a way of making sure deserialized data is stored in the database properly
+    #1. Field-level validation.. def validate_fieldname(self,value)
+    # def validate_name(self,value):
+    #     if len(value) < 2:
+    #         raise serializers.ValidationError('Length of name is too short')
+    #     return value
+    
+    #2 OBJECT-LEVEL VALIDATION.. def validate(self,data)
+    def validate(self,data):
+        if data['name'] == data['description']:
+            raise serializers.ValidationError('Name must not be the same as description')
+        return data
+    
+    #3 Validator, as a function..check top of code
