@@ -1,9 +1,8 @@
-
-from distutils.file_util import move_file
-from urllib import response
+from django.shortcuts import get_object_or_404
 from watchlist_app.api.serializers import WatchListSerializer
 from rest_framework.decorators import api_view
 from rest_framework import generics, mixins
+from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
 from watchlist_app.models import Review, WatchList, StreamPlatform
@@ -38,11 +37,11 @@ class ReviewCreate(generics.CreateAPIView):
        movie = WatchList.objects.get(pk=pk)
        serializer.save(watchlist=movie)
        
-class ReviewList(generics.ListCreateAPIView):
+class ReviewList(generics.ListAPIView):
     # queryset = Review.objects.all()
     serializer_class = ReviewSerializer
     
-    def get(self,request):
+    def get_queryset(self):
         pk = self.kwargs[pk]
         return Review.objects.filter(watchlist=pk)
         
@@ -51,6 +50,11 @@ class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
 
+
+class StreamPlatformVs(viewsets.ModelViewSet):
+    queryset = StreamPlatform.objects.all()
+    serializer_class = StreamPlatformSerializer
+    
 class StreamPlatformListAV(APIView):
     
     def get(self,request):
